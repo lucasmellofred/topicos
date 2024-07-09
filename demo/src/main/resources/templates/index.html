@@ -87,22 +87,26 @@
                     const row = document.createElement('tr');
                     const clienteNome = pedido.cliente && pedido.cliente.nome ? pedido.cliente.nome : 'Cliente desconhecido';
                     row.innerHTML = `
+                        <td>
+                            <div class="d-flex justify-content-center">
+                                <button class="btn btn-warning me-2" onclick="editPedido('${pedido.id}')">Editar</button>
+                                <button class="btn btn-danger ms-2" onclick="deletePedido('${pedido.id}')">Excluir</button>
+                            </div>
+                        </td>
                         <td>${pedido.id}</td>
                         <td>${clienteNome}</td>
                         <td>${pedido.valorTotal}</td>
                         <td>${pedido.status}</td>
-                        <td>
-                            <button class="btn btn-primary" onclick="editPedido('${pedido.id}')">Editar</button>
-                        </td>
                     `;
                     pedidosList.appendChild(row);
                 });
             }
 
-            async function editPedido(pedidoId) {
+            /*async function editPedido(pedidoId) {
                 const response = await fetch(`/api/pedidos/${pedidoId}`);
                 const pedido = await response.json();
 
+                document.getElementById('editPedidoForm').dataset.pedidoId = pedidoId;
                 document.getElementById('editClienteNome').value = pedido.cliente.nome;
                 document.getElementById('editStatus').value = pedido.status;
 
@@ -135,9 +139,47 @@
 
                 const modal = new bootstrap.Modal(document.getElementById('editPedidoModal'));
                 modal.show();
+            }*/
+            async function editPedido(pedidoId) {
+                const response = await fetch(`/api/pedidos/${pedidoId}`);
+                const pedido = await response.json();
+
+                document.getElementById('editPedidoForm').dataset.pedidoId = pedidoId;
+                document.getElementById('editClienteNome').value = pedido.cliente.nome;
+                document.getElementById('editStatus').value = pedido.status;
+
+                const editItemsContainer = document.getElementById('editItems');
+                editItemsContainer.innerHTML = '';
+                pedido.itens.forEach((item, index) => {
+                    const itemContainer = document.createElement('div');
+                    itemContainer.classList.add('item');
+                    itemContainer.innerHTML = `
+                        <div class="row mt-2 mb-2">
+                            <div class="col-4">
+                                <input type="text" value="${item.product.productName}" class="product-name form-control"/>
+                            </div>
+                            <div class="col-2">
+                                <input type="number" value="${item.quantity}" class="quantity form-control" min="1"/>
+                            </div>
+                            <div class="col-2">
+                                <input type="number" value="${item.unitPrice}" class="unit-price form-control" step="0.01"/>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="remove-item btn btn-danger">Remover</button>
+                            </div>
+                        </div>
+                    `;
+                    itemContainer.querySelector('.remove-item').addEventListener('click', () => {
+                        itemContainer.remove();
+                    });
+                    editItemsContainer.appendChild(itemContainer);
+                });
+
+                const modal = new bootstrap.Modal(document.getElementById('editPedidoModal'));
+                modal.show();
             }
 
-            async function updatePedido() {
+            /*async function updatePedido() {
                 const pedidoId = document.getElementById('editPedidoForm').dataset.pedidoId;
                 const clienteNome = document.getElementById('editClienteNome').value;
                 const status = document.getElementById('editStatus').value;
@@ -177,9 +219,60 @@
                 modal.hide();
 
                 fetchPedidos();
+            }*/
+            async function updatePedido() {
+                const pedidoId = document.getElementById('editPedidoForm').dataset.pedidoId;
+                const clienteNome = document.getElementById('editClienteNome').value;
+                const status = document.getElementById('editStatus').value;
+
+                const itens = Array.from(document.querySelectorAll('#editItems .item')).map((item) => {
+                    const productName = item.querySelector('.product-name').value;
+                    const quantity = parseFloat(item.querySelector('.quantity').value);
+                    const unitPrice = parseFloat(item.querySelector('.unit-price').value);
+
+                    return {
+                        quantity: quantity,
+                        unitPrice: unitPrice,
+                        product: {
+                            productName: productName
+                        }
+                    };
+                });
+
+                const valorTotal = itens.reduce((total, item) => total + (item.unitPrice * item.quantity), 0);
+
+                const pedido = {
+                    cliente: {
+                        nome: clienteNome
+                    },
+                    status: status,
+                    itens: itens,
+                    valorTotal: valorTotal
+                };
+
+                await fetch(`/api/pedidos/${pedidoId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(pedido)
+                });
+
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editPedidoModal'));
+                modal.hide();
+
+                fetchPedidos();
             }
 
+            async function deletePedido(pedidoId) {
+                if (confirm("Tem certeza que deseja excluir este pedido?")) {
+                    await fetch(`/api/pedidos/${pedidoId}`, {
+                        method: 'DELETE'
+                    });
 
+                    fetchPedidos(); // Atualiza a lista de pedidos após a exclusão
+                }
+            }
 
 
 
@@ -290,21 +383,21 @@
             }
 
             //document.addEventListener('DOMContentLoaded', fetchPedidos);
-            document.addEventListener('DOMContentLoaded', () => {
+            /*document.addEventListener('DOMContentLoaded', () => {
                 fetchPedidos();
 
                 document.getElementById('add-item').addEventListener('click', () => {
                     const itemContainer = document.createElement('div');
                     itemContainer.classList.add('item');
 
-                    /*itemContainer.innerHTML = `
-                    <div class="d-flex justify-content-evenly mt-1 mb-1 w-75">
-                        <input class="form-control w-25" type="text" placeholder="Nome do Produto" class="product-name"/>
-                        <input class="form-control w-25" type="number" placeholder="Quantidade" class="quantity" min="1" value="1"/>
-                        <input class="form-control w-25" type="number" placeholder="Preço Unitário" class="unit-price" step="0.01"/>
-                        <button type="button" class="remove-item btn btn-danger">Remover</button>
-                    </div>
-                    `;*/
+                    //itemContainer.innerHTML = `
+                    //<div class="d-flex justify-content-evenly mt-1 mb-1 w-75">
+                    //    <input class="form-control w-25" type="text" placeholder="Nome do Produto" class="product-name"/>
+                    //    <input class="form-control w-25" type="number" placeholder="Quantidade" class="quantity" min="1" value="1"/>
+                    //    <input class="form-control w-25" type="number" placeholder="Preço Unitário" class="unit-price" step="0.01"/>
+                    //    <button type="button" class="remove-item btn btn-danger">Remover</button>
+                    //</div>
+                    //`;
                     itemContainer.innerHTML = `
                     <div class="row mt-2 mb-2">
                         <div class="col-4">
@@ -328,19 +421,129 @@
 
                     document.getElementById('items').appendChild(itemContainer);
                 });
+            });*/
+            /*document.addEventListener('DOMContentLoaded', () => {
+                fetchPedidos();
+
+                document.getElementById('add-item').addEventListener('click', () => {
+                    const itemContainer = document.createElement('div');
+                    itemContainer.classList.add('item');
+                    itemContainer.innerHTML = `
+                        <div class="row mt-2 mb-2">
+                            <div class="col-4">
+                                <input type="text" placeholder="Nome do Produto" class="product-name form-control"/>
+                            </div>
+                            <div class="col-1">
+                                <input type="number" placeholder="Quantidade" class="quantity form-control" min="1" value="1"/>
+                            </div>
+                            <div class="col-2">
+                                <input type="number" placeholder="Preço Unitário" class="unit-price form-control" step="0.01"/>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="remove-item btn btn-danger">Remover</button>
+                            </div>
+                        </div>
+                    `;
+                    itemContainer.querySelector('.remove-item').addEventListener('click', () => {
+                        itemContainer.remove();
+                    });
+
+                    document.getElementById('items').appendChild(itemContainer);
+                });
+
+                document.getElementById('add-edit-item').addEventListener('click', () => {
+                    const itemContainer = document.createElement('div');
+                    itemContainer.classList.add('item');
+                    itemContainer.innerHTML = `
+                        <div class="row mt-2 mb-2">
+                            <div class="col-4">
+                                <input type="text" placeholder="Nome do Produto" class="product-name form-control"/>
+                            </div>
+                            <div class="col-1">
+                                <input type="number" placeholder="Quantidade" class="quantity form-control" min="1" value="1"/>
+                            </div>
+                            <div class="col-2">
+                                <input type="number" placeholder="Preço Unitário" class="unit-price form-control" step="0.01"/>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="remove-item btn btn-danger">Remover</button>
+                            </div>
+                        </div>
+                    `;
+                    itemContainer.querySelector('.remove-item').addEventListener('click', () => {
+                        itemContainer.remove();
+                    });
+
+                    document.getElementById('editItems').appendChild(itemContainer);
+                });
+            });*/
+            document.addEventListener('DOMContentLoaded', () => {
+                fetchPedidos();
+
+                document.getElementById('add-item').addEventListener('click', () => {
+                    const itemContainer = document.createElement('div');
+                    itemContainer.classList.add('item');
+                    itemContainer.innerHTML = `
+                        <div class="row mt-2 mb-2">
+                            <div class="col-4">
+                                <input type="text" placeholder="Nome do Produto" class="product-name form-control"/>
+                            </div>
+                            <div class="col-2">
+                                <input type="number" placeholder="Quantidade" class="quantity form-control" min="1" value="1"/>
+                            </div>
+                            <div class="col-2">
+                                <input type="number" placeholder="Preço Unitário" class="unit-price form-control" step="0.01"/>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="remove-item btn btn-danger">Remover</button>
+                            </div>
+                        </div>
+                    `;
+                    itemContainer.querySelector('.remove-item').addEventListener('click', () => {
+                        itemContainer.remove();
+                    });
+
+                    document.getElementById('items').appendChild(itemContainer);
+                });
+
+                document.getElementById('add-edit-item').addEventListener('click', () => {
+                    const itemContainer = document.createElement('div');
+                    itemContainer.classList.add('item');
+                    itemContainer.innerHTML = `
+                        <div class="row mt-2 mb-2">
+                            <div class="col-4">
+                                <input type="text" placeholder="Nome do Produto" class="product-name form-control"/>
+                            </div>
+                            <div class="col-2">
+                                <input type="number" placeholder="Quantidade" class="quantity form-control" min="1" value="1"/>
+                            </div>
+                            <div class="col-2">
+                                <input type="number" placeholder="Preço Unitário" class="unit-price form-control" step="0.01"/>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="remove-item btn btn-danger">Remover</button>
+                            </div>
+                        </div>
+                    `;
+                    itemContainer.querySelector('.remove-item').addEventListener('click', () => {
+                        itemContainer.remove();
+                    });
+
+                    document.getElementById('editItems').appendChild(itemContainer);
+                });
             });
         </script>
-        <div class="rounded-2 border border-2 p-2 bg-body-tertiary mb-3">
+        <div class="rounded-2 border border-2 p-2 bg-body-tertiary mb-5 shadow-lg">
             <h1>Pedidos</h1>
             <!--<ul id="pedidos-list"></ul>-->
-            <table class="table">
+            <table class="table table-bordered rounded-2">
                 <thead>
                     <tr>
+                        <th>Ações</th>
                         <th>ID</th>
                         <th>Cliente</th>
-                        <th>Total</th>
+                        <th>Total do valor dos itens</th>
                         <th>Status</th>
-                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody id="pedidos-list"></tbody>
@@ -349,7 +552,7 @@
 
         <!-- Modal -->
         <div class="modal fade" id="editPedidoModal" tabindex="-1" aria-labelledby="editPedidoModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="editPedidoModalLabel">Editar Pedido</h5>
@@ -364,22 +567,20 @@
                                 </div>
                                 <div class="form-group col-6">
                                     <label for="editStatus">Status</label>
-                                    <select class="form-select" id="editStatus">
-                                        <option value="Pendente">Pendente</option>
-                                        <option value="Processado">Processado</option>
-                                        <option value="Enviado">Enviado</option>
-                                        <option value="Entregue">Entregue</option>
-                                    </select>
+                                    <input type="text" class="form-control" id="editStatus">
                                 </div>
                             </div>
-                            <h3>Itens</h3>
-                            <div id="editItems"></div>
-                            <button type="button" id="add-edit-item" class="btn btn-warning">Adicionar Item</button>
+                            <div class="row mt-2 mb-2">
+                                <div class="form-group col">
+                                    <h4>Itens</h4>
+                                    <div id="editItems"></div>
+                                    <button type="button" id="add-edit-item" class="btn btn-success mt-2 mb-2">Adicionar Item</button>
+                                </div>
+                            </div>
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                        <button type="button" class="btn btn-primary" onclick="updatePedido()">Salvar mudanças</button>
+                        <button type="button" class="btn btn-success" onclick="updatePedido()">Salvar</button>
                     </div>
                 </div>
             </div>
@@ -394,9 +595,9 @@
 
 
 
-        <div class="rounded-2 border border-2 p-2 bg-body-tertiary mb-3">
+        <div class="rounded-2 border border-2 p-2 bg-body-tertiary mb-5 shadow-lg">
             <h2>Criar Pedido</h2>
-            <div class="row">
+            <div class="row mb-2">
                 <div class="form-group col-5">
                     <label class="form-group-text" for="clienteNome">Nome do Cliente&nbsp;<b><font color="red">*</font></b></label>
                     <input class="form-control" type="text" id="clienteNome" placeholder="Nome do Cliente"/>
