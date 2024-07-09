@@ -98,6 +98,7 @@ public class Pedido {
     private List<OrderItem> itens;
     private double valorTotal;
     private String status;
+    
     public String getId() {
         return id;
     }

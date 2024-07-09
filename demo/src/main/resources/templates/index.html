@@ -60,54 +60,126 @@
     <meta charset="UTF-8">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <title>Pedidos</title>
-    <script>
-        async function fetchPedidos() {
-            const response = await fetch('/api/pedidos');
-            const pedidos = await response.json();
-            const pedidosList = document.getElementById('pedidos-list');
-            pedidosList.innerHTML = '';
-            pedidos.forEach(pedido => {
-                const listItem = document.createElement('li');
-                listItem.textContent = `ID: ${pedido.id}, Cliente: ${pedido.clienteId}, Total: ${pedido.valorTotal}, Status: ${pedido.status}`;
-                pedidosList.appendChild(listItem);
-            });
-        }
-
-        async function createPedido() {
-            const clienteId = document.getElementById('clienteId').value;
-            const dataPedido = new Date();
-            const itens = [{produtoId: 'produto1', quantidade: 2, precoUnitario: 50.0}];
-            const valorTotal = 100.0;
-            const status = 'Processando';
-
-            const pedido = {
-                clienteId,
-                dataPedido,
-                itens,
-                valorTotal,
-                status
-            };
-
-            await fetch('/api/pedidos', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(pedido)
-            });
-
-            fetchPedidos();
-        }
-
-        document.addEventListener('DOMContentLoaded', fetchPedidos);
-    </script>
+    <title>Pedidos</title>    
 </head>
 <body>
-    <h1>Pedidos</h1>
-    <ul id="pedidos-list"></ul>
-    <h2>Criar Pedido</h2>
-    <input type="text" id="clienteId" placeholder="ID do Cliente"/>
-    <button onclick="createPedido()">Criar Pedido</button>
+    <main class="p-4">
+        <script>
+            async function fetchPedidos() {
+                const response = await fetch('/api/pedidos');
+                const pedidos = await response.json();
+                const pedidosList = document.getElementById('pedidos-list');
+                pedidosList.innerHTML = '';
+                pedidos.forEach(pedido => {
+                    const listItem = document.createElement('li');
+                    const clienteNome = pedido.cliente && pedido.cliente.nome ? pedido.cliente.nome : 'Cliente desconhecido';
+                    listItem.textContent = `ID: ${pedido.id}, Cliente: ${clienteNome}, Total: ${pedido.valorTotal}, Status: ${pedido.status}`;
+                    pedidosList.appendChild(listItem);
+                });
+            }
+        
+            async function createPedido() {
+                const clienteNome = document.getElementById('clienteNome').value;
+                const dataPedido = new Date();
+                //const itens = [{produtoId: 'produto1', quantidade: 2, precoUnitario: 50.0}];
+                //const valorTotal = 100.0;
+                //const status = 'Processando';
+                const status = document.getElementById('status').value;
+                const storeId = "668c6db918b5f17c4b0ab6d3"; // ID da loja fixa para exemplo
+
+                const items = Array.from(document.querySelectorAll('.item')).map((item, index) => {
+                    const productName = item.querySelector('.product-name').value;
+                    const quantity = parseFloat(item.querySelector('.quantity').value);
+                    const unitPrice = parseFloat(item.querySelector('.unit-price').value);
+
+                    return {
+                        id: `item${index + 1}`,
+                        lineItemId: `li${index + 1}`,
+                        unitPrice: unitPrice,
+                        quantity: quantity,
+                        product: {
+                            id: `p${index + 1}`,
+                            productName: productName,
+                            unitPrice: unitPrice
+                        }
+                    };
+                });
+
+                const valorTotal = items.reduce((total, item) => total + (item.unitPrice * item.quantity), 0);
+        
+                const pedido = {
+                    cliente: {
+                        nome: clienteNome
+                    },
+                    dataPedido,
+                    //itens,
+                    //valorTotal,
+                    //status
+                    //items: items,
+                    status: status,
+                    store: { $oid: storeId },
+                    customer: { nome: clienteNome },
+                    items: items,
+                    valorTotal: valorTotal
+                };
+        
+                await fetch('/api/pedidos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(pedido)
+                });
+        
+                fetchPedidos();
+            }
+        
+            //document.addEventListener('DOMContentLoaded', fetchPedidos);
+            document.addEventListener('DOMContentLoaded', () => {
+            fetchPedidos();
+
+            document.getElementById('add-item').addEventListener('click', () => {
+                const itemContainer = document.createElement('div');
+                itemContainer.classList.add('item');
+
+                itemContainer.innerHTML = `
+                    <input type="text" placeholder="Nome do Produto" class="product-name"/>
+                    <input type="number" placeholder="Quantidade" class="quantity" min="1" value="1"/>
+                    <input type="number" placeholder="Preço Unitário" class="unit-price" step="0.01"/>
+                    <button type="button" class="remove-item">Remover</button>
+                `;
+
+                itemContainer.querySelector('.remove-item').addEventListener('click', () => {
+                    itemContainer.remove();
+                });
+
+                document.getElementById('items').appendChild(itemContainer);
+            });
+        });
+        </script>
+        <h1>Pedidos</h1>
+        <ul id="pedidos-list"></ul>
+        <h2>Criar Pedido</h2>
+        <div class="form-group w-25">
+            <label class="form-group-text" for="clienteNome">Nome do Cliente&nbsp;<b><font color="red">*</font></b></label>
+            <input class="form-control" type="text" id="clienteNome" placeholder="Nome do Cliente"/>
+        </div>
+
+        <div class="form-group w-25">
+            <label class="form-group-text" for="status">Status&nbsp;<b><font color="red">*</font></b></label>
+            <select class="form-control" id="status">
+                <option value="Pending">Pending</option>
+                <option value="Processed">Processed</option>
+                <option value="Shipped">Shipped</option>
+                <option value="Delivered">Delivered</option>
+            </select>
+        </div>
+        <h3>Itens</h3>
+        <div id="items"></div>
+        <button type="button" id="add-item">Adicionar Item</button>
+        <br><br>
+
+        <button class="btn btn-success" onclick="createPedido()">Criar Pedido</button>
+    </main>
 </body>
 </html>

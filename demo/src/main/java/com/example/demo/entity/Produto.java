@@ -49,12 +49,14 @@ public class Produto {
 //import org.springframework.data.annotation.Id;
 //import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "products")
+@Document(collection = "product")
 public class Produto {
     @Id
     private String id;
     private String nome;
     private double preco;
+    private String name;
+    private double unitPrice;
     
     public String getId() {
         return id;
@@ -74,6 +76,17 @@ public class Produto {
     public void setPreco(double preco) {
         this.preco = preco;
     }
-
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public double getUnitPrice() {
+        return unitPrice;
+    }
+    public void setUnitPrice(double unitPrice) {
+        this.unitPrice = unitPrice;
+    }
     
 }
