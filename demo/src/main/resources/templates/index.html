@@ -1,0 +1,113 @@
+<!--<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pedidos</title>
+    <script>
+        async function fetchPedidos() {
+            const response = await fetch('/api/pedidos');
+            const pedidos = await response.json();
+            const pedidosList = document.getElementById('pedidos-list');
+            pedidosList.innerHTML = '';
+            pedidos.forEach(pedido => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `ID: ${pedido.id}, Cliente: ${pedido.clienteId}, Total: ${pedido.valorTotal}, Status: ${pedido.status}`;
+                pedidosList.appendChild(listItem);
+            });
+        }
+
+        async function createPedido() {
+            const clienteId = document.getElementById('clienteId').value;
+            const dataPedido = new Date();
+            const itens = [{produtoId: 'produto1', quantidade: 2, precoUnitario: 50.0}];
+            const valorTotal = 100.0;
+            const status = 'Processando';
+
+            const pedido = {
+                clienteId,
+                dataPedido,
+                itens,
+                valorTotal,
+                status
+            };
+
+            await fetch('/api/pedidos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(pedido)
+            });
+
+            fetchPedidos();
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchPedidos);
+    </script>
+</head>
+<body>
+    <h1>Pedidos</h1>
+    <ul id="pedidos-list"></ul>
+    <h2>Criar Pedido</h2>
+    <input type="text" id="clienteId" placeholder="ID do Cliente"/>
+    <button onclick="createPedido()">Criar Pedido</button>
+</body>
+</html>-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <title>Pedidos</title>
+    <script>
+        async function fetchPedidos() {
+            const response = await fetch('/api/pedidos');
+            const pedidos = await response.json();
+            const pedidosList = document.getElementById('pedidos-list');
+            pedidosList.innerHTML = '';
+            pedidos.forEach(pedido => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `ID: ${pedido.id}, Cliente: ${pedido.clienteId}, Total: ${pedido.valorTotal}, Status: ${pedido.status}`;
+                pedidosList.appendChild(listItem);
+            });
+        }
+
+        async function createPedido() {
+            const clienteId = document.getElementById('clienteId').value;
+            const dataPedido = new Date();
+            const itens = [{produtoId: 'produto1', quantidade: 2, precoUnitario: 50.0}];
+            const valorTotal = 100.0;
+            const status = 'Processando';
+
+            const pedido = {
+                clienteId,
+                dataPedido,
+                itens,
+                valorTotal,
+                status
+            };
+
+            await fetch('/api/pedidos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(pedido)
+            });
+
+            fetchPedidos();
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchPedidos);
+    </script>
+</head>
+<body>
+    <h1>Pedidos</h1>
+    <ul id="pedidos-list"></ul>
+    <h2>Criar Pedido</h2>
+    <input type="text" id="clienteId" placeholder="ID do Cliente"/>
+    <button onclick="createPedido()">Criar Pedido</button>
+</body>
+</html>
