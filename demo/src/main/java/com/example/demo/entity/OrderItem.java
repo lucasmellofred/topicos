@@ -10,6 +10,10 @@ public class OrderItem {
     private String produtoId;
     private int quantidade;
     private double precoUnitario;
+    private String lineItemId;
+    private double unitPrice;
+    private double quantity;
+    private Produto product;
     
     public String getId() {
         return id;
@@ -34,6 +38,30 @@ public class OrderItem {
     }
     public void setPrecoUnitario(double precoUnitario) {
         this.precoUnitario = precoUnitario;
+    }
+    public String getLineItemId() {
+        return lineItemId;
+    }
+    public void setLineItemId(String lineItemId) {
+        this.lineItemId = lineItemId;
+    }
+    public double getUnitPrice() {
+        return unitPrice;
+    }
+    public void setUnitPrice(double unitPrice) {
+        this.unitPrice = unitPrice;
+    }
+    public double getQuantity() {
+        return quantity;
+    }
+    public void setQuantity(double quantity) {
+        this.quantity = quantity;
+    }
+    public Produto getProduct() {
+        return product;
+    }
+    public void setProduct(Produto product) {
+        this.product = product;
     }
 
     

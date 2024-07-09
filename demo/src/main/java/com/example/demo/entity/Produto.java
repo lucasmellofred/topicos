@@ -57,6 +57,7 @@ public class Produto {
     private double preco;
     private String name;
     private double unitPrice;
+    private String productName;
     
     public String getId() {
         return id;
@@ -87,6 +88,12 @@ public class Produto {
     }
     public void setUnitPrice(double unitPrice) {
         this.unitPrice = unitPrice;
+    }
+    public String getProductName() {
+        return productName;
+    }
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
     
 }
