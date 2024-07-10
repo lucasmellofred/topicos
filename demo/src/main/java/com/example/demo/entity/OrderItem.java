@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "order_items")
 public class OrderItem {
-    @Id
+    /*@Id
     private String id;
     private String produtoId;
     private int quantidade;
@@ -62,7 +62,42 @@ public class OrderItem {
     }
     public void setProduct(Produto product) {
         this.product = product;
+    }*/
+    @Id
+    private String id;
+    private String lineItemId;
+    private double unitPrice;
+    private int quantity;
+    private Produto product;
+    public String getId() {
+        return id;
     }
-
+    public void setId(String id) {
+        this.id = id;
+    }
+    public String getLineItemId() {
+        return lineItemId;
+    }
+    public void setLineItemId(String lineItemId) {
+        this.lineItemId = lineItemId;
+    }
+    public double getUnitPrice() {
+        return unitPrice;
+    }
+    public void setUnitPrice(double unitPrice) {
+        this.unitPrice = unitPrice;
+    }
+    public int getQuantity() {
+        return quantity;
+    }
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+    public Produto getProduct() {
+        return product;
+    }
+    public void setProduct(Produto product) {
+        this.product = product;
+    }
     
 }

@@ -102,6 +102,7 @@ public class PedidoService {
     public List<Pedido> searchPedidos(Map<String, Object> query) {
         Query mongoQuery = new Query();
         if (query.containsKey("rules")) {
+            @SuppressWarnings("unchecked")
             List<Map<String, Object>> rules = (List<Map<String, Object>>) query.get("rules");
             for (Map<String, Object> rule : rules) {
                 String field = (String) rule.get("id");
@@ -148,6 +149,12 @@ public class PedidoService {
                         break;
                     // Adicione outros operadores conforme necessário
                 }
+
+                // Adicionar lógica para total de itens
+                if (field.equals("totalItems")) {
+                    criteria = Criteria.where("itens").size((int) value);
+                }
+
                 mongoQuery.addCriteria(criteria);
             }
         }

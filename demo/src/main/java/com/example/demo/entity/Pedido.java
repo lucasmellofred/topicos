@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -11,7 +12,7 @@ public class Pedido {
     @Id
     private String id;
     private String clienteId;
-    private Date dataPedido;
+    private Date dataTime;
     private List<Item> itens;
     private double valorTotal;
     private String status;
@@ -27,11 +28,11 @@ public class Pedido {
     public void setClienteId(String clienteId) {
         this.clienteId = clienteId;
     }
-    public Date getDataPedido() {
-        return dataPedido;
+    public Date getDataTime() {
+        return dataTime;
     }
-    public void setDataPedido(Date dataPedido) {
-        this.dataPedido = dataPedido;
+    public void setDataTime(Date dataTime) {
+        this.dataTime = dataTime;
     }
     public List<Item> getItens() {
         return itens;
@@ -83,61 +84,77 @@ class Item {
 
 @Document(collection = "order")
 public class Pedido {
-    /*@Id
-    private String id;
-    private String clienteId;
-    private Date dataPedido;
-    private List<OrderItem> itens;
-    private double valorTotal;
-    private String status;*/
+    /*
+     * @Id
+     * private String id;
+     * private String clienteId;
+     * private Date dataTime;
+     * private List<OrderItem> itens;
+     * private double valorTotal;
+     * private String status;
+     */
+
     @Id
     private String id;
-    private String clienteId;
+    private Date dataTime;
+    private String status;
+    private ObjectId clienteId;
     private Cliente cliente;
-    private Date dataPedido;
     private List<OrderItem> itens;
     private double valorTotal;
-    private String status;
-    
+
     public String getId() {
         return id;
     }
+
     public void setId(String id) {
         this.id = id;
     }
-    public String getClienteId() {
+
+    public ObjectId getClienteId() {
         return clienteId;
     }
-    public void setClienteId(String clienteId) {
+
+    public void setClienteId(ObjectId clienteId) {
         this.clienteId = clienteId;
     }
+
     public Cliente getCliente() {
         return cliente;
     }
+
     public void setCliente(Cliente cliente) {
         this.cliente = cliente;
     }
-    public Date getDataPedido() {
-        return dataPedido;
+
+    public Date getDataTime() {
+        return dataTime;
     }
-    public void setDataPedido(Date dataPedido) {
-        this.dataPedido = dataPedido;
+
+    public void setDataTime(Date dataTime) {
+        this.dataTime = dataTime;
     }
+
     public List<OrderItem> getItens() {
         return itens;
     }
+
     public void setItens(List<OrderItem> itens) {
         this.itens = itens;
     }
+
     public double getValorTotal() {
         return valorTotal;
     }
+
     public void setValorTotal(double valorTotal) {
         this.valorTotal = valorTotal;
     }
+
     public String getStatus() {
         return status;
     }
+
     public void setStatus(String status) {
         this.status = status;
     }

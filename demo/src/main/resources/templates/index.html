@@ -18,14 +18,14 @@
 
         async function createPedido() {
             const clienteId = document.getElementById('clienteId').value;
-            const dataPedido = new Date();
+            const dataTime = new Date();
             const itens = [{produtoId: 'produto1', quantidade: 2, precoUnitario: 50.0}];
             const valorTotal = 100.0;
             const status = 'Processando';
 
             const pedido = {
                 clienteId,
-                dataPedido,
+                dataTime,
                 itens,
                 valorTotal,
                 status
@@ -64,7 +64,13 @@
     <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jQuery-QueryBuilder/2.6.0/css/query-builder.default.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery-QueryBuilder/2.6.0/js/query-builder.standalone.min.js"></script>-->
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/jQuery-QueryBuilder/dist/css/query-builder.default.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/jQuery-QueryBuilder/dist/js/query-builder.standalone.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jQuery-QueryBuilder/dist/js/query-builder.standalone.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <link rel="icon" th:href="@{/favicon-32x32.png}" type="image/png">
     <title>Pedidos</title>    
@@ -336,7 +342,7 @@
 
             /*async function createPedido() {
                 const clienteNome = document.getElementById('clienteNome').value;
-                const dataPedido = new Date();
+                const dataTime = new Date();
                 //const itens = [{produtoId: 'produto1', quantidade: 2, precoUnitario: 50.0}];
                 //const valorTotal = 100.0;
                 //const status = 'Processando';
@@ -367,7 +373,7 @@
                     cliente: {
                         nome: clienteNome
                     },
-                    dataPedido,
+                    dataTime,
                     //itens,
                     //valorTotal,
                     //status
@@ -389,9 +395,9 @@
         
                 fetchPedidos();
             }*/
-            async function createPedido() {
+            /*async function createPedido() {
                 const clienteNome = document.getElementById('clienteNome').value;
-                const dataPedido = new Date();
+                const dataTime = new Date();
                 const status = document.getElementById('status').value;
                 const storeId = "668c6db918b5f17c4b0ab6d3"; // ID da loja fixa para exemplo
 
@@ -419,7 +425,7 @@
                     cliente: {
                         nome: clienteNome
                     },
-                    dataPedido,
+                    dataTime,
                     status: status,
                     store: { $oid: storeId },
                     itens: itens,
@@ -441,7 +447,10 @@
                 // Limpar campos após criar o pedido
                 document.getElementById('clienteNome').value = '';
                 document.getElementById('status').value = 'Pendente';
-            }
+            }*/
+           
+
+
 
             //document.addEventListener('DOMContentLoaded', fetchPedidos);
             /*document.addEventListener('DOMContentLoaded', () => {
@@ -783,9 +792,17 @@
                 <div class="rounded-2 border border-2 p-2 bg-body-tertiary mb-5 shadow-lg">
                     <h1>Criar Pedido</h1>
                     <div class="row mb-2">
-                        <div class="form-group col-5">
+                        <!--<div class="form-group col-5">
                             <label class="form-group-text" for="clienteNome">Nome do Cliente&nbsp;<b><font color="red">*</font></b></label>
                             <input class="form-control" type="text" id="clienteNome" placeholder="Nome do Cliente"/>
+                        </div>-->
+                        <div class="form-group col-5">
+                            <label class="form-group-text" for="clienteSelect">Cliente&nbsp;<b><font color="red">*</font></b></label>
+                            <select class="form-control" id="clienteSelect" style="width: 100%;"></select>
+                        </div>
+                        <div class="form-group col-3">
+                            <label class="form-group-text" for="lojaSelect">Loja&nbsp;<b><font color="red">*</font></b></label>
+                            <select class="form-control" id="lojaSelect" style="width: 100%;"></select>
                         </div>
                         <div class="form-group col-3">
                             <label class="form-group-text" for="status">Status&nbsp;<b><font color="red">*</font></b></label>
@@ -810,6 +827,110 @@
                     <div class="d-flex justify-content-center">
                         <button class="btn btn-success" id="createPedidoBtn">Criar Pedido</button>
                     </div>
+                    <script>
+                        $(document).ready(function() {
+                            $('#clienteSelect').select2({
+                                placeholder: 'Digite o nome do cliente',
+                                minimumInputLength: 1,
+                                ajax: {
+                                    url: '/api/clientes/search',
+                                    dataType: 'json',
+                                    delay: 250,
+                                    data: function (params) {
+                                        return {
+                                            query: params.term
+                                        };
+                                    },
+                                    processResults: function (data) {
+                                        return {
+                                            results: data.map(function(cliente) {
+                                                return {
+                                                    id: cliente.id,
+                                                    text: cliente.fullName + ' (' + cliente.email + ')'
+                                                };
+                                            })
+                                        };
+                                    },
+                                    cache: true
+                                },
+                                theme: "bootstrap-5",
+                            });
+                        });
+
+                        $(document).ready(function() {
+                            $('#lojaSelect').select2({
+                                placeholder: 'Digite o nome da loja',
+                                minimumInputLength: 1,
+                                ajax: {
+                                    url: '/api/lojas/search',
+                                    dataType: 'json',
+                                    delay: 250,
+                                    data: function (params) {
+                                        return {
+                                            query: params.term
+                                        };
+                                    },
+                                    processResults: function (data) {
+                                        return {
+                                            results: data.map(function(loja) {
+                                                return {
+                                                    id: loja.id,
+                                                    text: loja.name + ' (' + loja.webAddress + ')'
+                                                };
+                                            })
+                                        };
+                                    },
+                                    cache: true
+                                },
+                                theme: "bootstrap-5",
+                            });
+                        });
+                        
+                        async function createPedido() {
+                            const clienteSelect = $('#clienteSelect').select2('data')[0];
+                            const clienteId = clienteSelect ? clienteSelect.id : null;
+                            const dataTime = new Date();
+                            const status = document.getElementById('status').value;
+                        
+                            const itens = Array.from(document.querySelectorAll('.item')).map((item) => {
+                                const productName = item.querySelector('.product-name').value;
+                                const quantity = parseFloat(item.querySelector('.quantity').value);
+                                const unitPrice = parseFloat(item.querySelector('.unit-price').value);
+                        
+                                return {
+                                    lineItemId: `li${Math.random().toString(36).substring(2, 15)}`,
+                                    unitPrice: unitPrice,
+                                    quantity: quantity,
+                                    product: {
+                                        productName: productName,
+                                        unitPrice: unitPrice
+                                    }
+                                };
+                            });
+                        
+                            const valorTotal = itens.reduce((total, item) => total + (item.unitPrice * item.quantity), 0);
+                        
+                            const pedido = {
+                                clienteId: clienteId,
+                                dataTime: dataTime,
+                                status: status,
+                                itens: itens,
+                                valorTotal: valorTotal
+                            };
+                        
+                            console.log(JSON.stringify(pedido));
+                        
+                            await fetch('/api/pedidos', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(pedido)
+                            });
+                        
+                            fetchPedidos();
+                        }
+                        </script>
                 </div>
             </div>
 
@@ -854,7 +975,15 @@
                                         id: 'items.productName',
                                         label: 'Nome do Produto',
                                         type: 'string'
-                                    }
+                                    },
+                                    {
+                                        id: 'totalItems',
+                                        label: 'Total de Itens',
+                                        type: 'integer',
+                                        validation: {
+                                            min: 0
+                                        }
+                                    },
                                 ],
 
                                 lang: {
