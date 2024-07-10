@@ -61,6 +61,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jQuery-QueryBuilder/2.6.0/css/query-builder.default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery-QueryBuilder/2.6.0/js/query-builder.standalone.min.js"></script>-->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/jQuery-QueryBuilder/dist/css/query-builder.default.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/jQuery-QueryBuilder/dist/js/query-builder.standalone.min.js"></script>
+
     <link rel="icon" th:href="@{/favicon-32x32.png}" type="image/png">
     <title>Pedidos</title>    
 </head>
@@ -432,6 +437,10 @@
                 });
 
                 fetchPedidos();
+
+                // Limpar campos após criar o pedido
+                document.getElementById('clienteNome').value = '';
+                document.getElementById('status').value = 'Pendente';
             }
 
             //document.addEventListener('DOMContentLoaded', fetchPedidos);
@@ -596,7 +605,7 @@
                 });
             }
 
-            document.addEventListener('DOMContentLoaded', () => {
+            /*document.addEventListener('DOMContentLoaded', () => {
                 fetchPedidos();
                 fetchProducts();
 
@@ -650,6 +659,81 @@
                     });
 
                     document.getElementById('editItems').appendChild(itemContainer);
+                });
+            });*/
+            document.addEventListener('DOMContentLoaded', () => {
+                // Lista global de itens
+                let itensList = [];
+
+                // Função para adicionar item
+                function addItem() {
+                    const itemContainer = document.createElement('div');
+                    itemContainer.classList.add('item');
+                    itemContainer.innerHTML = `
+                        <div class="row mt-2 mb-2">
+                            <div class="col-3">
+                                <input type="text" placeholder="Nome do Produto *" class="product-name form-control" list="productList required"/>
+                            </div>
+                            <div class="col-2">
+                                <input type="number" placeholder="Quantidade *" class="quantity form-control" min="1" value="1 required"/>
+                            </div>
+                            <div class="col-2">
+                                <input type="number" placeholder="Preço Unitário *" class="unit-price form-control" step="0.01 required"/>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="remove-item btn btn-danger">Remover</button>
+                            </div>
+                        </div>
+                    `;
+                    const removeButton = itemContainer.querySelector('.remove-item');
+                    removeButton.addEventListener('click', () => {
+                        // Remover da lista global de itens
+                        const index = itensList.indexOf(itemContainer);
+                        if (index !== -1) {
+                            itensList.splice(index, 1);
+                        }
+                        // Remover visualmente
+                        itemContainer.remove();
+                    });
+
+                    // Adicionar item à lista global de itens
+                    itensList.push(itemContainer);
+
+                    document.getElementById('items').appendChild(itemContainer);
+                }
+
+                // Ao carregar a página, buscar pedidos e produtos
+                fetchPedidos();
+                fetchProducts();
+
+                // Adicionar item ao clicar no botão "Adicionar Item"
+                document.getElementById('add-item').addEventListener('click', addItem);
+
+                // Ao clicar em "Criar Pedido"
+                document.getElementById('createPedidoBtn').addEventListener('click', async () => {
+                    // Limpar a lista de itens para evitar duplicações
+                    itensList = [];
+
+                    // Construir lista de itens a partir dos elementos visíveis
+                    const itens = Array.from(document.querySelectorAll('#items .item')).map(itemContainer => {
+                        const productName = itemContainer.querySelector('.product-name').value;
+                        const quantity = parseFloat(itemContainer.querySelector('.quantity').value);
+                        const unitPrice = parseFloat(itemContainer.querySelector('.unit-price').value);
+
+                        return {
+                            quantity: quantity,
+                            unitPrice: unitPrice,
+                            product: {
+                                productName: productName
+                            }
+                        };
+                    });
+
+                    // Criar pedido com os itens
+                    await createPedido({ itens: itens });
+
+                    // Limpar lista de itens visualmente
+                    document.getElementById('items').innerHTML = '';
                 });
             });
 
@@ -720,8 +804,11 @@
                     <button class="btn btn-warning" type="button" id="add-item">Adicionar Item</button>
                     <br><br>
 
-                    <div class="d-flex justify-content-center">
+                    <!--<div class="d-flex justify-content-center">
                         <button class="btn btn-success" onclick="createPedido()">Criar Pedido</button>
+                    </div>-->
+                    <div class="d-flex justify-content-center">
+                        <button class="btn btn-success" id="createPedidoBtn">Criar Pedido</button>
                     </div>
                 </div>
             </div>
@@ -730,6 +817,120 @@
                 <div class="rounded-2 border border-2 p-2 bg-body-tertiary mb-5 shadow-lg">
                     <h1>Pedidos</h1>
                     <!--<ul id="pedidos-list"></ul>-->
+
+                    <div id="builder"></div>
+                    <button class="btn btn-success mb-3" id="buscarPedidos">Buscar Pedidos</button>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', () => {
+                            $('#builder').queryBuilder({
+                                filters: [
+                                    {
+                                        id: 'cliente.nome',
+                                        label: 'Cliente',
+                                        type: 'string'
+                                    },
+                                    {
+                                        id: 'valorTotal',
+                                        label: 'Valor Total',
+                                        type: 'double',
+                                        validation: {
+                                            min: 0
+                                        }
+                                    },
+                                    {
+                                        id: 'status',
+                                        label: 'Status',
+                                        type: 'string',
+                                        input: 'select',
+                                        values: {
+                                            'Pendente': 'Pendente',
+                                            'Processado': 'Processado',
+                                            'Enviado': 'Enviado',
+                                            'Entregue': 'Entregue'
+                                        }
+                                    },
+                                    {
+                                        id: 'items.productName',
+                                        label: 'Nome do Produto',
+                                        type: 'string'
+                                    }
+                                ],
+
+                                lang: {
+                                        "add_rule": "Adicionar Regra",
+                                        "add_group": "Adicionar Grupo",
+                                        "delete_rule": "Excluir",
+                                        "delete_group": "Excluir",
+                                        "conditions": {
+                                            "AND": "E",
+                                            "OR": "OU"
+                                        },
+                                        "operators": {
+                                            "equal": "Igual a",
+                                            "not_equal": "Diferente de",
+                                            "in": "Está em",
+                                            "not_in": "Não está em",
+                                            "less": "Menor que",
+                                            "less_or_equal": "Menor ou igual a",
+                                            "greater": "Maior que",
+                                            "greater_or_equal": "Maior ou igual a",
+                                            "between": "Entre",
+                                            "not_between": "Não está entre",
+                                            "begins_with": "Começa com",
+                                            "not_begins_with": "Não começa com",
+                                            "contains": "Contém",
+                                            "not_contains": "Não contém",
+                                            "ends_with": "Termina com",
+                                            "not_ends_with": "Não termina com",
+                                            "is_empty": "Está vazio",
+                                            "is_not_empty": "Não está vazio",
+                                            "is_null": "É nulo",
+                                            "is_not_null": "Não é nulo"
+                                        }
+                                    }
+                            });
+
+                            document.getElementById('buscarPedidos').addEventListener('click', async () => {
+                                const query = $('#builder').queryBuilder('getRules');
+                                if (!query) {
+                                    alert('Invalid query');
+                                    return fetchPedidos();
+                                }
+
+                                const response = await fetch('/api/pedidos/search', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify(query)
+                                });
+                                
+                                const pedidos = await response.json();
+                                const pedidosList = document.getElementById('pedidos-list');
+                                pedidosList.innerHTML = '';
+
+                                pedidos.forEach(pedido => {
+                                    const row = document.createElement('tr');
+                                    const clienteNome = pedido.cliente && pedido.cliente.nome ? pedido.cliente.nome : 'Cliente desconhecido';
+                                    row.innerHTML = `
+                                        <td>
+                                            <div class="d-flex justify-content-center">
+                                                <button class="btn btn-warning me-2" onclick="editPedido('${pedido.id}')">Editar</button>
+                                                <button class="btn btn-danger ms-2" onclick="deletePedido('${pedido.id}')">Excluir</button>
+                                            </div>
+                                        </td>
+                                        <td>${pedido.id}</td>
+                                        <td>${clienteNome}</td>
+                                        <td>${pedido.valorTotal}</td>
+                                        <td>${pedido.status}</td>
+                                    `;
+                                    pedidosList.appendChild(row);
+                                });
+                            });
+                        });
+                    </script>
+
                     <table class="table table-bordered rounded-2 display" id="pedidosTable">
                         <thead>
                             <tr>
@@ -785,6 +986,7 @@
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
 
