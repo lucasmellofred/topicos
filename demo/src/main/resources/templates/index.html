@@ -60,6 +60,7 @@
     <meta charset="UTF-8">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
     <link rel="icon" th:href="@{/favicon-32x32.png}" type="image/png">
     <title>Pedidos</title>    
 </head>
@@ -140,7 +141,7 @@
                 const modal = new bootstrap.Modal(document.getElementById('editPedidoModal'));
                 modal.show();
             }*/
-            async function editPedido(pedidoId) {
+            /*async function editPedido(pedidoId) {
                 const response = await fetch(`/api/pedidos/${pedidoId}`);
                 const pedido = await response.json();
 
@@ -154,17 +155,17 @@
                     const itemContainer = document.createElement('div');
                     itemContainer.classList.add('item');
                     itemContainer.innerHTML = `
-                        <div class="row mt-2 mb-2">
-                            <div class="col-4">
+                        <div class="d-flex justify-content-between mt-2 mb-2">
+                            <div class="col-5 ">
                                 <input type="text" value="${item.product.productName}" class="product-name form-control"/>
                             </div>
-                            <div class="col-2">
+                            <div class="col-2 ">
                                 <input type="number" value="${item.quantity}" class="quantity form-control" min="1"/>
                             </div>
-                            <div class="col-2">
+                            <div class="col-2 ">
                                 <input type="number" value="${item.unitPrice}" class="unit-price form-control" step="0.01"/>
                             </div>
-                            <div class="col">
+                            <div class="">
                                 <button type="button" class="remove-item btn btn-danger">Remover</button>
                             </div>
                         </div>
@@ -175,6 +176,60 @@
                     editItemsContainer.appendChild(itemContainer);
                 });
 
+                const modal = new bootstrap.Modal(document.getElementById('editPedidoModal'));
+                modal.show();
+            }*/
+            async function editPedido(pedidoId) {
+                const response = await fetch(`/api/pedidos/${pedidoId}`);
+                const pedido = await response.json();
+
+                document.getElementById('editPedidoForm').dataset.pedidoId = pedidoId;
+                document.getElementById('editClienteNome').value = pedido.cliente.nome;
+
+                // Preencher o campo Status
+                const selectStatus = document.getElementById('editStatus');
+                selectStatus.innerHTML = ''; // Limpar opções existentes
+
+                const statusOptions = ['Pendente', 'Processado', 'Enviado', 'Entregue'];
+                statusOptions.forEach(option => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option;
+                    optionElement.textContent = option;
+                    selectStatus.appendChild(optionElement);
+                });
+
+                // Definir o valor selecionado
+                selectStatus.value = pedido.status;
+
+                // Preencher os itens
+                const editItemsContainer = document.getElementById('editItems');
+                editItemsContainer.innerHTML = '';
+                pedido.itens.forEach((item, index) => {
+                    const itemContainer = document.createElement('div');
+                    itemContainer.classList.add('item');
+                    itemContainer.innerHTML = `
+                        <div class="d-flex justify-content-between mt-2 mb-2">
+                            <div class="col-5 ">
+                                <input type="text" value="${item.product.productName}" class="product-name form-control"/>
+                            </div>
+                            <div class="col-2 ">
+                                <input type="number" value="${item.quantity}" class="quantity form-control" min="1"/>
+                            </div>
+                            <div class="col-2 ">
+                                <input type="number" value="${item.unitPrice}" class="unit-price form-control" step="0.01"/>
+                            </div>
+                            <div class="">
+                                <button type="button" class="remove-item btn btn-danger">Remover</button>
+                            </div>
+                        </div>
+                    `;
+                    itemContainer.querySelector('.remove-item').addEventListener('click', () => {
+                        itemContainer.remove();
+                    });
+                    editItemsContainer.appendChild(itemContainer);
+                });
+
+                // Exibir a modal
                 const modal = new bootstrap.Modal(document.getElementById('editPedidoModal'));
                 modal.show();
             }
@@ -274,9 +329,6 @@
                 }
             }
 
-
-
-        
             /*async function createPedido() {
                 const clienteNome = document.getElementById('clienteNome').value;
                 const dataPedido = new Date();
@@ -477,7 +529,7 @@
                     document.getElementById('editItems').appendChild(itemContainer);
                 });
             });*/
-            document.addEventListener('DOMContentLoaded', () => {
+            /*document.addEventListener('DOMContentLoaded', () => {
                 fetchPedidos();
 
                 document.getElementById('add-item').addEventListener('click', () => {
@@ -531,97 +583,211 @@
 
                     document.getElementById('editItems').appendChild(itemContainer);
                 });
+            });*/
+            async function fetchProducts() {
+                const response = await fetch('/api/produtos/all');
+                const products = await response.json();
+
+                const datalist = document.getElementById('productList');
+                products.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product.name;
+                    datalist.appendChild(option);
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                fetchPedidos();
+                fetchProducts();
+
+                document.getElementById('add-item').addEventListener('click', () => {
+                    const itemContainer = document.createElement('div');
+                    itemContainer.classList.add('item');
+                    itemContainer.innerHTML = `
+                        <div class="row mt-2 mb-2">
+                            <div class="col-3">
+                                <input type="text" placeholder="Nome do Produto *" class="product-name form-control" list="productList required"/>
+                            </div>
+                            <div class="col-2">
+                                <input type="number" placeholder="Quantidade *" class="quantity form-control" min="1" value="1 required"/>
+                            </div>
+                            <div class="col-2">
+                                <input type="number" placeholder="Preço Unitário *" class="unit-price form-control" step="0.01 required"/>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="remove-item btn btn-danger">Remover</button>
+                            </div>
+                        </div>
+                    `;
+                    itemContainer.querySelector('.remove-item').addEventListener('click', () => {
+                        itemContainer.remove();
+                    });
+
+                    document.getElementById('items').appendChild(itemContainer);
+                });
+
+                document.getElementById('add-edit-item').addEventListener('click', () => {
+                    const itemContainer = document.createElement('div');
+                    itemContainer.classList.add('item');
+                    itemContainer.innerHTML = `
+                        <div class="d-flex justify-content-between mt-2 mb-2">
+                            <div class="col-5">
+                                <input type="text" placeholder="Nome do Produto *" class="product-name form-control" list="productList"/>
+                            </div>
+                            <div class="col-2">
+                                <input type="number" placeholder="Quantidade *" class="quantity form-control" min="1" value="1"/>
+                            </div>
+                            <div class="col-2">
+                                <input type="number" placeholder="Preço Unitário *" class="unit-price form-control" step="0.01"/>
+                            </div>
+                            <div class="">
+                                <button type="button" class="remove-item btn btn-danger">Remover</button>
+                            </div>
+                        </div>
+                    `;
+                    itemContainer.querySelector('.remove-item').addEventListener('click', () => {
+                        itemContainer.remove();
+                    });
+
+                    document.getElementById('editItems').appendChild(itemContainer);
+                });
             });
+
         </script>
-        <div class="rounded-2 border border-2 p-2 bg-body-tertiary mb-5 shadow-lg">
-            <h1>Pedidos</h1>
-            <!--<ul id="pedidos-list"></ul>-->
-            <table class="table table-bordered rounded-2">
-                <thead>
-                    <tr>
-                        <th>Ações</th>
-                        <th>ID</th>
-                        <th>Cliente</th>
-                        <th>Total do valor dos itens</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="pedidos-list"></tbody>
-            </table>
-        </div>
 
-        <!-- Modal -->
-        <div class="modal fade" id="editPedidoModal" tabindex="-1" aria-labelledby="editPedidoModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editPedidoModalLabel">Editar Pedido</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <ul class="nav nav-tabs d-flex mb-2" id="myTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active tabsPedido" id="criarPedido-tab" data-bs-toggle="tab" href="#criarPedido" role="tab" aria-controls="criarPedido" aria-selected="true">Novo pedido</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link tabsPedido" id="todosPedidos-tab" data-bs-toggle="tab" href="#todosPedidos" role="tab" aria-controls="todosPedidos" aria-selected="false">Todos pedidos</a>
+            </li>
+        </ul>
+
+        <style>
+            .tabsPedido {
+                color: #888888;
+            }
+
+            .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
+                color: var(--bs-nav-tabs-link-active-color);
+                background-color: #f8f9fa;
+                border-color: var(--bs-nav-tabs-link-active-border-color);
+            }
+
+            .nav-link:focus, .nav-link:hover {
+                color: var(--bs-nav-link-hover-color);
+            }
+
+            .nav {
+                --bs-nav-link-padding-x: 1rem;
+                --bs-nav-link-padding-y: 0.5rem;
+                --bs-nav-link-font-weight: ;
+                --bs-nav-link-color: var(--bs-link-color);
+                --bs-nav-link-hover-color: #00000;
+                --bs-nav-link-disabled-color: var(--bs-secondary-color);
+                display: flex;
+                flex-wrap: wrap;
+                padding-left: 0;
+                margin-bottom: 0;
+                list-style: none;
+            }
+        </style>
+
+        <div class="tab-content" id="myTabsContent">
+            <div class="tab-pane fade show active" id="criarPedido" role="tabpanel" aria-labelledby="criarPedido-tab">
+                <div class="rounded-2 border border-2 p-2 bg-body-tertiary mb-5 shadow-lg">
+                    <h1>Criar Pedido</h1>
+                    <div class="row mb-2">
+                        <div class="form-group col-5">
+                            <label class="form-group-text" for="clienteNome">Nome do Cliente&nbsp;<b><font color="red">*</font></b></label>
+                            <input class="form-control" type="text" id="clienteNome" placeholder="Nome do Cliente"/>
+                        </div>
+                        <div class="form-group col-3">
+                            <label class="form-group-text" for="status">Status&nbsp;<b><font color="red">*</font></b></label>
+                            <select class="form-select" id="status">
+                                <option value="Pendente">Pendente</option>
+                                <option value="Processado">Processado</option>
+                                <option value="Enviado">Enviado</option>
+                                <option value="Entregue">Entregue</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="modal-body">
-                        <form id="editPedidoForm">
-                            <div class="row">
-                                <div class="form-group col-6">
-                                    <label for="editClienteNome">Nome do Cliente</label>
-                                    <input type="text" class="form-control" id="editClienteNome">
-                                </div>
-                                <div class="form-group col-6">
-                                    <label for="editStatus">Status</label>
-                                    <input type="text" class="form-control" id="editStatus">
-                                </div>
-                            </div>
-                            <div class="row mt-2 mb-2">
-                                <div class="form-group col">
-                                    <h4>Itens</h4>
-                                    <div id="editItems"></div>
-                                    <button type="button" id="add-edit-item" class="btn btn-success mt-2 mb-2">Adicionar Item</button>
-                                </div>
-                            </div>
-                        </form>
+
+                    <h3>Itens</h3>
+                    <datalist id="productList"></datalist>
+                    <div id="items"></div>
+                    <button class="btn btn-warning" type="button" id="add-item">Adicionar Item</button>
+                    <br><br>
+
+                    <div class="d-flex justify-content-center">
+                        <button class="btn btn-success" onclick="createPedido()">Criar Pedido</button>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-success" onclick="updatePedido()">Salvar</button>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="todosPedidos" role="tabpanel" aria-labelledby="todosPedidos-tab">
+                <div class="rounded-2 border border-2 p-2 bg-body-tertiary mb-5 shadow-lg">
+                    <h1>Pedidos</h1>
+                    <!--<ul id="pedidos-list"></ul>-->
+                    <table class="table table-bordered rounded-2 display" id="pedidosTable">
+                        <thead>
+                            <tr>
+                                <th>Ações</th>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Total do valor dos itens</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pedidos-list"></tbody>
+                    </table>
+                </div>
+           
+                <!-- Modal -->
+                <div class="modal fade" id="editPedidoModal" tabindex="-1" aria-labelledby="editPedidoModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editPedidoModalLabel">Editar Pedido</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="editPedidoForm">
+                                    <div class="row">
+                                        <div class="form-group col-6">
+                                            <label for="editClienteNome">Nome do Cliente</label>
+                                            <input type="text" class="form-control" id="editClienteNome">
+                                        </div>
+                                        <!--<div class="form-group col-6">
+                                            <label for="editStatus">Status</label>
+                                            <input type="text" class="form-control" id="editStatus">
+                                        </div>-->
+                                        <div class="form-group col-6">
+                                            <label for="editStatus">Status</label>
+                                            <select class="form-select" id="editStatus">
+                                                <!-- Opções do status serão preenchidas dinamicamente -->
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2 mb-2">
+                                        <div class="form-group col">
+                                            <h4>Itens</h4>
+                                            <div id="editItems"></div>
+                                            <button type="button" id="add-edit-item" class="btn btn-success mt-2 mb-2">Adicionar Item</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-success" onclick="updatePedido()">Salvar</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-
-
-
-
-
-
-
-
-
-        <div class="rounded-2 border border-2 p-2 bg-body-tertiary mb-5 shadow-lg">
-            <h2>Criar Pedido</h2>
-            <div class="row mb-2">
-                <div class="form-group col-5">
-                    <label class="form-group-text" for="clienteNome">Nome do Cliente&nbsp;<b><font color="red">*</font></b></label>
-                    <input class="form-control" type="text" id="clienteNome" placeholder="Nome do Cliente"/>
-                </div>
-                <div class="form-group col-3">
-                    <label class="form-group-text" for="status">Status&nbsp;<b><font color="red">*</font></b></label>
-                    <select class="form-select" id="status">
-                        <option value="Pendente">Pendente</option>
-                        <option value="Processado">Processado</option>
-                        <option value="Enviado">Enviado</option>
-                        <option value="Entregue">Entregue</option>
-                    </select>
-                </div>
-            </div>
-
-            <h3>Itens</h3>
-            <div id="items"></div>
-            <button class="btn btn-warning" type="button" id="add-item">Adicionar Item</button>
-            <br><br>
-        </div>
-
-        <div class="d-flex justify-content-center">
-            <button class="btn btn-success" onclick="createPedido()">Criar Pedido</button>
-        </div>
     </main>
 </body>
 </html>

@@ -81,6 +81,7 @@ public class Cliente {
     private String id;
     private String nome;
     private String email;
+    private String fullName;
     
     public String getId() {
         return id;
@@ -100,6 +101,13 @@ public class Cliente {
     public void setEmail(String email) {
         this.email = email;
     }
+    public String getFullName() {
+        return fullName;
+    }
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+    
 
     
 }

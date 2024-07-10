@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.entity.Cliente;
@@ -46,5 +47,15 @@ public class ClienteController {
     @DeleteMapping("/{id}")
     public void deleteCliente(@PathVariable String id) {
         clienteRepository.deleteById(id);
+    }
+
+    @GetMapping("/search")
+    public List<Cliente> searchClientes(@RequestParam String query) {
+        return clienteRepository.findByFullNameContainingIgnoreCase(query);
+    }
+
+    @PostMapping("/ids")
+    public List<Cliente> getClientesByIds(@RequestBody List<String> ids) {
+        return clienteRepository.findAllById(ids);
     }
 }
